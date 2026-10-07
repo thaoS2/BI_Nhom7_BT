@@ -1,0 +1,13 @@
+Parameter,Value
+Historical_Observations,501
+Portfolio_Method,Equal Weight
+BTC_Weight,0.333333
+GLD_Weight,0.333333
+SPY_Weight,0.333333
+N_Simulations,10000
+Confidence_Level,0.95
+Horizon_Days,1
+Random_Seed,42
+Historical_Portfolio_Mean_Daily,0.0016829139507809241
+Historical_Portfolio_Volatility_Daily,0.012503780855772766
+Covariance_Matrix_Consistent_With_Chapter_4,True

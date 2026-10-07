@@ -1,0 +1,5 @@
+,BTC,GLD,SPY,Chosen
+Equal Weight,0.333333,0.333333,0.333333,True
+Inverse Volatility,0.115964,0.419052,0.464985,False
+Minimum Variance,0.000000,0.439755,0.560245,False
+Bao thu (BTC 10%),0.100000,0.450000,0.450000,False

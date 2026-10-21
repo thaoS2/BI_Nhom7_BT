@@ -1,0 +1,24 @@
+# Dữ liệu thô: không đưa lên Git (tải lại theo data/README.md)
+data/raw/*
+!data/raw/.gitkeep
+
+# Bí mật: muối dùng để băm mã bệnh nhân
+.env
+*.salt
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Hệ điều hành / Office
+.DS_Store
+Thumbs.db
+~$*
+
+# Chỉ bỏ comment dòng dưới nếu chưa kiểm tra xong việc ẩn danh hóa
+# data/anonymized/*
+
+# File Power BI lớn: cân nhắc Git LFS nếu .pbix vượt 50 MB (GitHub chặn file trên 100 MB)

@@ -1,0 +1,247 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from imblearn.over_sampling import SMOTE 
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+
+# ==========================================
+# BƯỚC 1: ĐỌC VÀ KHÁM PHÁ DỮ LIỆU BAN ĐẦU
+# ==========================================
+# Đọc file dữ liệu thô (đảm bảo tên file khớp với tệp CSV bạn đã tải lên)
+file_path = "./Sales - Maketing customer dataset.csv"
+df = pd.read_csv(file_path)
+
+print(f"Kích thước dataset ban đầu: {df.shape[0]} dòng, {df.shape[1]} cột")
+
+# ==========================================
+# BƯỚC 2: CHIA TRAIN / TEST TRƯỚC (CHỐNG DATA LEAKAGE)
+# ==========================================
+# Tách biến mục tiêu 'churn' và các đặc trưng
+X = df.drop(columns=["churn"])
+y = df["churn"]
+
+# Chia theo tỷ lệ 75% Train - 25% Test, dùng stratify theo churn[cite: 17]
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42, stratify=y
+)
+
+# Gộp lại tạm thời để xử lý trên tập Train trước, sau đó áp dụng cho Test
+train_df = X_train.copy()
+train_df["churn"] = y_train
+
+test_df = X_test.copy()
+test_df["churn"] = y_test
+
+# ==========================================
+# BƯỚC 3: XỬ LÝ GIÁ TRỊ KHUYẾT (MISSING VALUES)
+# ==========================================
+# Biến số: age, total_spent, satisfaction_score -> Thay thế bằng Median tính từ Train[cite: 18]
+num_vars = ["age", "total_spent", "satisfaction_score"]
+medians = train_df[num_vars].median()
+
+for var in num_vars:
+  train_df[var] = train_df[var].fillna(medians[var])
+  test_df[var] = test_df[var].fillna(medians[var])
+
+# Biến phân loại: gender -> Thay thế bằng Mode tính từ Train[cite: 18]
+mode_gender = train_df["gender"].mode()[0]
+train_df["gender"] = train_df["gender"].fillna(mode_gender)
+test_df["gender"] = test_df["gender"].fillna(mode_gender)
+
+# Biến coupon_code: Tỷ lệ khuyết cao (41.05%), chuyển thành biến nhị phân has_coupon[cite: 4, 18]
+train_df["has_coupon"] = train_df["coupon_code"].notna().astype(int)
+test_df["has_coupon"] = test_df["coupon_code"].notna().astype(int)
+train_df.drop(columns=["coupon_code"], inplace=True)
+test_df.drop(columns=["coupon_code"], inplace=True)
+
+# Các giá trị khuyết khác (nếu có) điền giá trị phù hợp
+train_df.fillna(train_df.median(numeric_only=True), inplace=True)
+test_df.fillna(train_df.median(numeric_only=True), inplace=True)
+
+# ==========================================
+# BƯỚC 4: XỬ LÝ NGOẠI LỆ BẰNG CAPPING (IQR) TRÊN TRAIN
+# ==========================================
+outlier_vars = [
+    "age",
+    "total_spent",
+    "avg_order_value",
+    "marketing_spend_per_user",
+    "lifetime_value",
+]
+
+for var in outlier_vars:
+  Q1 = train_df[var].quantile(0.25)
+  Q3 = train_df[var].quantile(0.75)
+  IQR = Q3 - Q1
+  lower_bound = Q1 - 1.5 * IQR
+  upper_bound = Q3 + 1.5 * IQR
+
+  # Giới hạn (Capping) trên cả Train và Test dựa hoàn toàn vào ngưỡng của Train[cite: 19, 20]
+  train_df[var] = train_df[var].clip(lower=lower_bound, upper=upper_bound)
+  test_df[var] = test_df[var].clip(lower=lower_bound, upper=upper_bound)
+
+# ==========================================
+# BƯỚC 5: TẠO BIẾN PHÁI SINH (FEATURE ENGINEERING)
+# ==========================================
+for df_temp in [train_df, test_df]:
+  # Mức chi tiêu bình quân trên mỗi lượt truy cập
+  df_temp["value_per_visit"] = df_temp["total_spent"] / (
+      df_temp["total_visits"] + 1e-5
+  )
+
+  # Xử lý các cột ngày tháng nếu có trong dataset
+  if (
+      "signup_date" in df_temp.columns
+      and "last_purchase_date" in df_temp.columns
+  ):
+    df_temp["signup_date"] = pd.to_datetime(
+        df_temp["signup_date"], errors="coerce"
+    )
+    df_temp["last_purchase_date"] = pd.to_datetime(
+        df_temp["last_purchase_date"], errors="coerce"
+    )
+    df_temp["tenure_days"] = (
+        df_temp["last_purchase_date"] - df_temp["signup_date"]
+    ).dt.days
+    df_temp["days_since_last_purchase"] = (
+        pd.to_datetime("today") - df_temp["last_purchase_date"]
+    ).dt.days
+    df_temp.drop(columns=["signup_date", "last_purchase_date"], inplace=True)
+
+# ==========================================
+# BƯỚC 6: MÃ HÓA BIẾN PHÂN LOẠI (ONE-HOT ENCODING)
+# ==========================================
+cat_vars = [
+    "country",
+    "city",
+    "acquisition_channel",
+    "device_type",
+    "subscription_type",
+    "payment_method",
+    "gender",
+]
+# Lọc các biến phân loại thực tế có trong dataframe
+cat_vars_present = [col for col in cat_vars if col in train_df.columns]
+
+train_df = pd.get_dummies(train_df, columns=cat_vars_present, drop_first=True)
+test_df = pd.get_dummies(test_df, columns=cat_vars_present, drop_first=True)
+
+# Đồng bộ hóa các cột đặc trưng giữa Train và Test
+train_df, test_df = train_df.align(test_df, join="left", axis=1, fill_value=0)
+
+# Tách lại X và y hoàn chỉnh sau tiền xử lý
+X_train_proc = train_df.drop(columns=["churn"])
+y_train_proc = train_df["churn"]
+X_test_proc = test_df.drop(columns=["churn"])
+y_test_proc = test_df["churn"]
+
+print(
+    f"Số lượng đặc trưng sau khi Encoding: {X_train_proc.shape[1]} features"
+    "[cite: 21, 22]"
+)
+
+# ==========================================
+# BƯỚC 7: XÂY DỰNG MÔ HÌNH 1 (TRAIN GỐC)
+# ==========================================
+model_1 = DecisionTreeClassifier(max_depth=6, random_state=42)
+model_1.fit(X_train_proc, y_train_proc)
+
+# ==========================================
+# BƯỚC 8: CÂN BẰNG DỮ LIỆU BẰNG SMOTE (CHỈ TRÊN TRAIN)
+# ==========================================
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train_proc, y_train_proc)
+
+# ==========================================
+# BƯỚC 9: XÂY DỰNG MÔ HÌNH 2 (TRAIN CÂN BẰNG SMOTE)
+# ==========================================
+model_2 = DecisionTreeClassifier(max_depth=6, random_state=42)
+model_2.fit(X_train_smote, y_train_smote)
+
+# ==========================================
+# BƯỚC 10: ĐÁNH GIÁ VÀ SO SÁNH HAI MÔ HÌNH TRÊN TẬP TEST
+# ==========================================
+y_pred_1 = model_1.predict(X_test_proc)
+y_pred_2 = model_2.predict(X_test_proc)
+
+
+def get_metrics(y_true, y_pred):
+  acc = accuracy_score(y_true, y_pred)
+  prec = precision_score(y_true, y_pred, zero_division=0)
+  rec = recall_score(y_true, y_pred, zero_division=0)
+  f1 = f1_score(y_true, y_pred, zero_division=0)
+  return acc, prec, rec, f1
+
+
+acc_1, prec_1, rec_1, f1_1 = get_metrics(y_test_proc, y_pred_1)
+acc_2, prec_2, rec_2, f1_2 = get_metrics(y_test_proc, y_pred_2)
+
+# Tổng hợp kết quả thành bảng so sánh khớp với Báo cáo nhóm 7
+comparison_df = pd.DataFrame({
+    "Model 1 - Train gốc": [
+        f"{acc_1*100:.2f}%",
+        f"{prec_1*100:.2f}%",
+        f"{rec_1*100:.2f}%",
+        f"{f1_1*100:.2f}%",
+    ],
+    "Model 2 - SMOTE": [
+        f"{acc_2*100:.2f}%",
+        f"{prec_2*100:.2f}%",
+        f"{rec_2*100:.2f}%",
+        f"{f1_2*100:.2f}%",
+    ],
+}, index=["Accuracy", "Precision", "Recall", "F1-Score"])
+
+print("\n--- BẢNG SO SÁNH KẾT QUẢ HAI MÔ HÌNH ---")
+print(comparison_df)
+
+# ==========================================
+# BƯỚC 11: VẼ BIỂU ĐỒ SO SÁNH TRỰC QUAN (HÌNH 3.5)
+# ==========================================
+raw_metrics_df = pd.DataFrame({
+    "Model 1 - Train gốc": [acc_1, prec_1, rec_1, f1_1],
+    "Model 2 - SMOTE": [acc_2, prec_2, rec_2, f1_2],
+}, index=["Accuracy", "Precision", "Recall", "F1-Score"])
+
+ax = raw_metrics_df.T.plot(kind="bar", figsize=(10, 6), rot=0)
+plt.title(
+    "So sánh các chỉ số đánh giá giữa hai mô hình Decision Tree[cite: 29]",
+    fontsize=12,
+    fontweight="bold",
+)
+plt.ylabel("Score", fontsize=10)
+plt.ylim(0, 1.05)
+plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+for p in ax.patches:
+  ax.annotate(
+      f"{p.get_height():.3f}",
+      (p.get_x() + p.get_width() / 2.0, p.get_height() + 0.02),
+      ha="center",
+      va="bottom",
+      fontsize=9,
+  )
+
+plt.legend(loc="upper right")
+plt.tight_layout()
+plt.show()
+
+# ==========================================
+# BƯỚC 12: PHÂN TÍCH FEATURE IMPORTANCE (MODEL 2)
+# ==========================================
+importances = model_2.feature_importances_
+feature_imp_df = pd.DataFrame(
+    {"Feature": X_train_proc.columns, "Importance": importances}
+).sort_values(by="Importance", ascending=False)
+
+print("\n--- TOP 10 ĐẶC TRƯNG QUAN TRỌNG NHẤT (MODEL 2) ---")
+print(feature_imp_df.head(10))

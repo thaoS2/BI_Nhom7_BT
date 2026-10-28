@@ -5,7 +5,7 @@
 | File | Nguồn | Giấy phép | Ngày tải |
 |---|---|---|---|
 | `Hospital Emergency Room Data Raw.csv` | Bộ "Hospital Emergency Room Data" lưu hành trên các nền tảng dữ liệu công khai (Maven Analytics, Kaggle). Chưa xác định được đơn vị phát hành gốc. **Link nhóm đã tải: [điền]** | **[điền]**. Chưa xác minh được; không ghi giấy phép nếu chưa đọc được trên trang tải | **[điền]** |
-| `patients.csv`, `encounters.csv`, `providers.csv`, `organizations.csv` | Synthea, bản mẫu "1,000 Sample Synthetic Patient Records, CSV" (SyntheticMass, MITRE): https://synthea.mitre.org/downloads | Phần mềm Synthea theo Apache-2.0; dữ liệu mẫu do MITRE phát hành như dữ liệu tổng hợp mở. Điều khoản riêng của file mẫu: **[điền, đọc trên trang tải]** | **[điền]** |
+| `patients.csv`, `encounters.csv`, `providers.csv`, `organizations.csv` | Synthea, bản mẫu "1,000 Sample Synthetic Patient Records, CSV" (SyntheticMass, MITRE): https://synthea.mitre.org/downloads | Phần mềm Synthea theo Apache-2.0; dữ liệu mẫu do MITRE phát hành như dữ liệu tổng hợp mở.| 17/05/2017|
 | (tùy chọn) file điều trị lâm sàng | Do giảng viên cung cấp | Chỉ dùng khi được phép; phải ẩn danh trước khi đưa vào repo | Chưa nhận |
 
 ## Thống kê sau khi tải (đã kiểm tra)

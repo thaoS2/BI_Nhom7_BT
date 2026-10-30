@@ -7,7 +7,7 @@ Tài liệu này là quy ước chung của nhóm. Đọc hết một lần trư
 | Tầng | Thư mục | Nội dung | Notebook ghi vào | Commit lên Git? |
 |---|---|---|---|---|
 | Bronze | `data/raw/` | Dữ liệu gốc, giữ nguyên | Không ai ghi (chỉ tải về) | **Không** (đã chặn trong `.gitignore`) |
-| Silver | `data/anonymized/` | Dữ liệu đã làm sạch và ẩn danh hóa | `02_anonymization` | Chỉ sau khi kiểm tra ẩn danh xong (mục 6) |
+| Silver | `data/anonymized/` | Dữ liệu đã làm sạch và ẩn danh hóa | `02a_clean_anonymize_er`, `02b_clean_anonymize_synthea` | Chỉ sau khi kiểm tra ẩn danh xong (mục 6) |
 | Gold | `data/processed/` | Bảng Fact và Dim của hai Data Mart | `03_etl_er_mart`, `04_etl_cost_mart` | Có |
 
 Ba luật bắt buộc:
@@ -16,23 +16,28 @@ Ba luật bắt buộc:
 2. **Không sửa tay file CSV** trong `anonymized/` và `processed/`. Mọi thay đổi phải đến từ code để chạy lại là ra cùng kết quả.
 3. **Mỗi file đầu ra chỉ do một notebook ghi.** Bảng dưới đây là nguồn sự thật:
 
-| Notebook | File được ghi trong `data/processed/` |
+| Notebook | File được ghi |
 |---|---|
-| `03_etl_er_mart` | `Fact_ER_Visit`, `Dim_Patient_ER`, `Dim_Department`, `Dim_Date`, `Dim_Time` |
-| `04_etl_cost_mart` | `Fact_Care_Cost`, `Dim_Patient_Cost`, `Dim_Doctor`, `Dim_Hospital`, `Dim_EncounterClass` |
+| `02a_clean_anonymize_er` | `data/anonymized/`: các file của nguồn ER |
+| `02b_clean_anonymize_synthea` | `data/anonymized/`: các file của nguồn Synthea |
+| `03_etl_er_mart` | `data/processed/`: `Fact_ER_Visit`, `Dim_Patient_ER`, `Dim_Department`, `Dim_Date`, `Dim_Time` |
+| `04_etl_cost_mart` | `data/processed/`: `Fact_Care_Cost`, `Dim_Patient_Cost`, `Dim_Doctor`, `Dim_Hospital`, `Dim_EncounterClass` |
 
-`Dim_Date` và `Dim_Time` là chiều dùng chung: **chỉ notebook 03 sinh ra**, notebook 04 chỉ đọc lại. Nhờ vậy hai mart luôn dùng cùng một lịch.
+`Dim_Date` và `Dim_Time` là chiều dùng chung: **chỉ notebook 03 sinh ra**, notebook 04 chỉ đọc lại. Nhờ vậy hai mart luôn dùng cùng một lịch. Hai notebook 02a và 02b phải dùng **cùng muối `ANON_SALT` và cùng quy tắc ẩn danh**; Thành viên 1 giữ quy tắc chung.
 
 ## 2. Ai sở hữu phần nào
 
-Mỗi file có một người sở hữu. Người khác muốn sửa thì làm trên nhánh riêng và gửi Pull Request cho chủ sở hữu duyệt, không sửa thẳng. Bảng này theo vai trò trong sheet Timeline, thay bằng tên thật khi đã chốt.
+Mỗi file có một người sở hữu. Người khác muốn sửa thì làm trên nhánh riêng và gửi Pull Request cho chủ sở hữu duyệt, không sửa thẳng. Bảng theo sheet Timeline; thay bằng tên thật khi đã chốt.
 
 | Phần | Chủ sở hữu |
 |---|---|
-| `notebook/01_*`, `01b_*`, `02_anonymization` | Data Engineer (Thành viên 1) |
-| `notebook/03_*`, `04_*`, `sql/ddl_*` | Data Architect (Thành viên 2) |
-| `notebook/05_analysis`, `sql/olap_*`, `dashboard/`, `figures/`, slide | BI Developer (Thành viên 3) |
-| `docs/` (báo cáo), `README.md`, `CONTRIBUTING.md`, `.gitignore` | Project Manager (Thành viên 4) |
+| `notebook/01a_*`, `02a_*`, `02c_*`, `05a_*` | Data Engineer (Thành viên 1) |
+| `notebook/03_*`, `sql/` (DDL, OLAP), sơ đồ schema, mô phỏng | Data Architect (Thành viên 2) |
+| `dashboard/` (trang Tổng quan, trang Vận hành), `figures/` | BI Developer (Thành viên 3) |
+| `docs/` báo cáo, `README.md`, `CONTRIBUTING.md`, `.gitignore` | Project Manager (Thành viên 4) |
+| `notebook/01b_*`, `02b_*`, `04_*`, `05b_*`, slide trong `docs/` | Data Engineer 2 (Thành viên 5) |
+
+Riêng file `.pbix`: Thành viên 3 sở hữu, nhưng trang Chi phí do Thành viên 5 làm. Hai người chỉ sửa **lần lượt**: người đang sửa báo trong nhóm, push xong thì báo người kia.
 
 ## 3. Quy ước đặt tên
 

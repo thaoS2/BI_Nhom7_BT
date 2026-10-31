@@ -1,0 +1,3 @@
+dataset,qi_set,qi_columns,k_min,equivalence_classes,records_in_class_lt_k,pct_records_in_class_lt_k,unique_records
+Synthea,A: nhân khẩu học sau ẩn cục bộ (ràng buộc),age_group+gender+race+ethnicity,5,37,0,0.0,0
+Synthea,B: A + tình trạng hôn nhân,age_group+gender+race+ethnicity+marital_status,1,74,82,7.1,9

@@ -1,0 +1,10 @@
+source,field,category,treatment,reason
+ER,Patient Id,Trực tiếp,Băm HMAC-SHA256 có muối → patient_hash,Có dạng số an sinh xã hội (100% dòng khớp ###-##-####)
+ER,Patient First Inital,Trực tiếp,Bỏ,"Một phần tên (tên cột giữ đúng chính tả trong file nguồn, ""Inital"")"
+ER,Patient Last Name,Trực tiếp,Bỏ,Họ tên
+ER,Patient Admission Date,Gián tiếp,Làm tròn xuống giờ → visit_datetime,Ngày giờ chính xác là mốc dễ liên kết; vẫn cần giờ cho heatmap
+ER,Patient Age,Gián tiếp,Nhóm tuổi 4 bậc → age_group,"Tuổi chính xác kết hợp giới tính, chủng tộc làm tăng nguy cơ"
+ER,Patient Gender,Gián tiếp,Chuẩn hóa M/F → gender,"Nhãn không thống nhất (M, F, Male, Female)"
+ER,Patient Race,Gián tiếp,Giữ → race,Cần cho phân tích công bằng; k được kiểm tra ở mục 4
+ER,Department Referral / Admission Flag / Satisfaction / Waittime,Không định danh,Giữ,Chỉ số vận hành
+ER,Patient Admission Flag.1,Trùng lặp,Bỏ,"Cột lặp, giống hệt Patient Admission Flag"

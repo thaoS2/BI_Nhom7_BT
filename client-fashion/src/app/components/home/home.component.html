@@ -1,0 +1,76 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>✨ Fashion World</h1>
+      <p>Khám phá các phong cách thời trang mới nhất</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Section -->
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-row">
+        <input type="text" [(ngModel)]="searchStyle" (input)="filterByStyle()"
+               placeholder="🔍 Tìm kiếm theo Style..."
+               class="search-input" />
+
+        <select [(ngModel)]="selectedStyle" (change)="onStyleSelect()" class="style-select">
+          <option value="">-- Tất cả Style --</option>
+          <option *ngFor="let s of styles" [value]="s">{{ s }}</option>
+        </select>
+
+        <button class="btn btn-clear" (click)="clearFilter()" *ngIf="searchStyle || selectedStyle">
+          ✕ Xóa lọc
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Fashion Groups -->
+  <div class="content-container" *ngIf="!loading">
+    <div class="style-group" *ngFor="let group of styleGroups">
+      <div class="style-header">
+        <h2>{{ getStyleIcon(group.style) }} {{ group.style }}</h2>
+        <span class="item-count">{{ group.fashions.length }} items</span>
+      </div>
+
+      <div class="fashion-grid">
+        <div class="fashion-card" *ngFor="let fashion of group.fashions"
+             (click)="viewDetail(fashion._id!)">
+          <div class="card-image">
+            <img [src]="getThumbnailUrl(fashion.thumbnail)" [alt]="fashion.tieude" />
+            <div class="card-overlay">
+              <button class="view-btn">Xem chi tiết →</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">{{ fashion.tieude }}</h3>
+            <div class="card-meta">
+              <span class="style-tag">{{ fashion.style }}</span>
+              <span class="date">{{ fashion.ngaytao | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-results" *ngIf="styleGroups.length === 0">
+      <div class="no-results-icon">🔍</div>
+      <h3>Không tìm thấy fashion nào</h3>
+      <p>Thử tìm với từ khóa khác hoặc <button class="link-btn" (click)="clearFilter()">xem tất cả</button></p>
+    </div>
+  </div>
+</div>
+

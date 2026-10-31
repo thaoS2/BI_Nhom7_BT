@@ -1,0 +1,54 @@
+<div class="detail-page">
+  <button class="back-btn" (click)="goBack()">← Quay lại</button>
+
+  <div class="alert alert-danger" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="detail-wrapper" *ngIf="fashion && !loading">
+    <div class="detail-main">
+      <div class="detail-image-section">
+        <img [src]="getThumbnailUrl(fashion.thumbnail)" [alt]="fashion.tieude" class="main-img" />
+      </div>
+
+      <div class="detail-info-section">
+        <div class="breadcrumb">
+          <span (click)="goBack()" class="breadcrumb-link">Trang chủ</span>
+          <span> / </span>
+          <span class="style-badge">{{ getStyleIcon(fashion.style) }} {{ fashion.style }}</span>
+        </div>
+
+        <h1 class="fashion-title">{{ fashion.tieude }}</h1>
+
+        <div class="meta-info">
+          <div class="meta-item">
+            <span class="meta-label">📅 Ngày đăng:</span>
+            <span>{{ fashion.ngaytao | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">🏷️ Style:</span>
+            <span class="style-pill">{{ fashion.style }}</span>
+          </div>
+        </div>
+
+        <div class="detail-content">
+          <h3>📝 Chi tiết</h3>
+          <div class="content-body" [innerHTML]="fashion.chitiet"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="related-section" *ngIf="relatedFashions.length > 0">
+      <h2>🔗 Fashion liên quan - Style {{ fashion.style }}</h2>
+      <div class="related-grid">
+        <div class="related-card" *ngFor="let f of relatedFashions" (click)="viewRelated(f._id!)">
+          <img [src]="getThumbnailUrl(f.thumbnail)" [alt]="f.tieude" />
+          <div class="related-info"><p>{{ f.tieude }}</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

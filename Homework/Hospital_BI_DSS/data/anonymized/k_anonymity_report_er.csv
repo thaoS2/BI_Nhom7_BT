@@ -1,0 +1,5 @@
+dataset,qi_set,qi_columns,k_min,equivalence_classes,records_in_class_lt_k,pct_records_in_class_lt_k,unique_records
+ER,A: nhân khẩu học (ràng buộc),age_group+gender+race,34,56,0,0.0,0
+ER,B: A + khoa chuyển tuyến,age_group+gender+race+referral_department,1,412,393,4.3,46
+ER,C: A + tháng khám,age_group+gender+race+visit_month,1,1046,813,8.8,40
+ER,D: A + giờ khám,age_group+gender+race+visit_hour,1,1312,1242,13.5,95

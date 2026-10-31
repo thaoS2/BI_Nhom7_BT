@@ -1,0 +1,13 @@
+source,field,category,treatment,reason
+Synthea,"patients.Id, encounters.PATIENT",Trực tiếp,Băm HMAC-SHA256 có muối (cùng hàm với 02a),Giữ được khóa nối giữa hai bảng
+Synthea,"SSN, DRIVERS, PASSPORT",Trực tiếp,Bỏ,Số giấy tờ
+Synthea,"PREFIX, FIRST, LAST, SUFFIX, MAIDEN",Trực tiếp,Bỏ,Họ tên
+Synthea,"patients: ADDRESS, CITY, COUNTY, ZIP, LAT, LON, BIRTHPLACE",Trực tiếp / gián tiếp,Bỏ,Địa chỉ và tọa độ bệnh nhân (Safe Harbor yêu cầu bỏ mức nhỏ hơn bang)
+Synthea,patients / providers / organizations: STATE,Hằng số,Bỏ,"Toàn bộ là Massachusetts (MA), không mang thông tin phân tích"
+Synthea,BIRTHDATE,Gián tiếp,Bỏ; thay bằng age_group,Ngày sinh đầy đủ là định danh
+Synthea,DEATHDATE,Gián tiếp,Bỏ; thay bằng is_deceased,Ngày mất là định danh
+Synthea,"RACE, ETHNICITY, GENDER, MARITAL",Gián tiếp,"Gộp nhóm hiếm, ẩn cục bộ nếu cần",Mẫu chỉ 1.163 người nên nhóm nhỏ dễ lộ
+Synthea,"providers: NAME, ADDRESS, ZIP, LAT, LON",Trực tiếp,Bỏ,Tên và địa chỉ bác sĩ
+Synthea,"providers.CITY, organizations.CITY",Địa chỉ cơ sở (không phải của bệnh nhân),Giữ ở mức thành phố,Dim_Hospital cần để nhóm cơ sở; không liên quan đến nơi ở của bệnh nhân
+Synthea,"organizations: ADDRESS, PHONE, ZIP, LAT, LON",Địa chỉ cơ sở,Bỏ,Không cần cho phân tích
+Synthea,organizations.REVENUE,Không dùng được,Bỏ,Toàn bằng 0
